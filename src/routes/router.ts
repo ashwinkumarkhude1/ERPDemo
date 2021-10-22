@@ -10,6 +10,7 @@ router.get('/get', employeeController.getAllEmployee);
 router.get('/get/:id', employeeController.getEmployee);
 router.post('/addEmployee', employeeController.addEmployee);
 router.put('/updateEmployee', employeeController.updateEmployee);
-router.delete('/deleteEmployee', employeeController.delteEmployee);
+router.delete('/deleteEmployee', employeeController.deleteEmployee);
+router.get('/getEHH/:id',employeeController.getEmployeeHigherHierarchy)
 
 export default router;

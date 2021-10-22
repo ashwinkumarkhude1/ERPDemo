@@ -1,4 +1,15 @@
-import {Entity, PrimaryGeneratedColumn, Column, BaseEntity} from "typeorm";
+import { type } from "os";
+import {Entity, PrimaryGeneratedColumn, Column, BaseEntity, OneToOne, JoinColumn} from "typeorm";
+enum position{
+  CEO="CEO",
+  MD="MD",
+  DUHead="DUHead",
+  Manager="Manager",
+  TL="TL",
+  SDE="SDE",
+  SDET="SDET",
+  DevOps="DevOps"
+}
 @Entity()
 export class Employee extends BaseEntity{
   @PrimaryGeneratedColumn()
@@ -10,5 +21,15 @@ export class Employee extends BaseEntity{
   @Column()
   age!: number;
   @Column()
-  position!: string;
+  experience!: number;
+  @Column()
+  address!: string;
+  @Column()
+  mobileNo!: string;
+  @Column()
+  position!: position;
+  @OneToOne(() => Employee)
+  @JoinColumn()
+  reportingTo!:Employee;
+
 }
