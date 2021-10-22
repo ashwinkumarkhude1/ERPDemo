@@ -1,4 +1,4 @@
-import * as express from 'express';
+import e, * as express from 'express';
 import { Employee } from '../entities/employee';
 import { json } from 'stream/consumers';
 // import Joi from 'joi';
@@ -51,10 +51,39 @@ class EmployeeController {
             employeeObject.position =request.body.position;
         else
             missingFeilds.push("position");
-        if(request.body.reportingTo!= null)
-            employeeObject.reportingTo =request.body.reportingTo;
-        else if(request.body.position != "CEO")
-            missingFeilds.push("reportingTo");
+        
+        if(request.body.CEO!= null)
+            employeeObject.CEO =request.body.CEO;
+        else{   
+            if(request.body.position != "CEO")
+                missingFeilds.push("CEO");
+        }
+        if(request.body.managingDirector!= null)
+            employeeObject.managingDirector =request.body.managingDirector;
+        else{
+             if (["CEO","MD"].indexOf(request.body.position)<0 )
+                missingFeilds.push("managingDirector");
+        }
+        if(request.body.duHead!= null)
+            employeeObject.duHead =request.body.duHead;
+        else{
+             if(["CEO","MD","DUHead"].indexOf(request.body.position)<0 )
+                missingFeilds.push("duHead");
+        }
+        if(request.body.manager!= null)
+            employeeObject.manager =request.body.manager;
+        else{
+             if(["CEO","MD","DUHead","Manager"].indexOf(request.body.position)<0 )
+                missingFeilds.push("manager");
+        }
+        if(request.body.teamLead!= null)
+            employeeObject.teamLead =request.body.teamLead;
+        else{
+             if(["CEO","MD","DUHead","Manager","TL"].indexOf(request.body.position)<0 )
+                missingFeilds.push("teamLead");
+        }
+            
+        
         
         if(missingFeilds.length != 0)
              return response.send("Following feilds are missing ->" + missingFeilds.toString());
@@ -101,16 +130,53 @@ class EmployeeController {
         response.send("Employee entry deleted");
     }
 
-    public static getEmployeeHigherHierarchy = (request: express.Request, response: express.Response) => {
-        let ehh:any ;
-        let emp;
-        Employee.findOne(
-            {where:
-                {id:parseInt(request.params.id)}
-            }).then((data)=>{emp =data});
-        console.log(emp);
-        response.send(emp);
-        
+    public static getEmployeeHigherHierarchy = async (request: express.Request, response: express.Response) => {
+        let res:any ={} 
+        let employee = await Employee.findOne(
+                {where:
+                    {id:parseInt(request.params.id)}
+                });
+                res.emmployee = {"firstName":employee?.firstName,"lastName":employee?.lastName};
+        if(employee!= null){
+            if(employee?.teamLead != null){
+                res.teamLead = await Employee.findOne(
+                    {where:
+                        {id:employee.teamLead},
+                        select:["firstName","lastName"]
+                    });
+            }
+            if(employee?.manager != null){
+                res.manager = await Employee.findOne(
+                    {where:
+                        {id:employee.manager},
+                        select:["firstName","lastName"]
+                    });
+            }
+            if(employee?.duHead != null){
+                res.duHead = await Employee.findOne(
+                    {where:
+                        {id:employee.duHead},
+                        select:["firstName","lastName"]
+                    });
+            }
+            if(employee?.managingDirector != null){
+                res.managingDirector = await Employee.findOne(
+                    {where:
+                        {id:employee.managingDirector},
+                        select:["firstName","lastName"]
+                    });
+            }
+            if(employee?.CEO != null){
+                res.CEO = await Employee.findOne(
+                    {where:
+                        {id:employee.CEO},
+                        select:["firstName","lastName"]
+                    });
+            }
+            response.send(res);
+        }else{
+            response.send("Employee not found");
+        }
         }
 
     // private static validateEmployee(employee:object):any{

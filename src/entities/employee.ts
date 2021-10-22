@@ -1,17 +1,8 @@
-import { type } from "os";
+
 import {Entity, PrimaryGeneratedColumn, Column, BaseEntity, OneToOne, JoinColumn} from "typeorm";
-enum position{
-  CEO="CEO",
-  MD="MD",
-  DUHead="DUHead",
-  Manager="Manager",
-  TL="TL",
-  SDE="SDE",
-  SDET="SDET",
-  DevOps="DevOps"
-}
+import { Position ,employeeInterface } from "./employeeInterface";
 @Entity()
-export class Employee extends BaseEntity{
+export class Employee extends BaseEntity implements employeeInterface{
   @PrimaryGeneratedColumn()
   id!: number;
   @Column()
@@ -27,9 +18,15 @@ export class Employee extends BaseEntity{
   @Column()
   mobileNo!: string;
   @Column()
-  position!: position;
-  @OneToOne(() => Employee)
-  @JoinColumn()
-  reportingTo!:Employee;
-
+  position!: Position;
+  @Column({nullable:true})
+  teamLead?:number;
+  @Column({nullable:true})
+  manager?:number;
+  @Column({nullable:true})
+  duHead?:number;
+  @Column({nullable:true})
+  managingDirector?:number;
+  @Column({nullable:true})
+  CEO?:number;
 }
