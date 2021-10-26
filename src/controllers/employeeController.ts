@@ -1,11 +1,9 @@
 import e, * as express from 'express';
 import { Employee } from '../entities/employee';
-import { json } from 'stream/consumers';
-// import Joi from 'joi';
-
+import { Position } from '../entities/employeeInterface';
 class EmployeeController {
     public static getAllEmployee = (request: express.Request, response: express.Response) => {
-        Employee.find().then((data) =>{
+        Employee.find({select:["firstName","lastName","age","experience","address","mobileNo","position"]}).then((data) =>{
             response.json(data)
         });
     }
@@ -13,7 +11,8 @@ class EmployeeController {
     public static getEmployee = (request: express.Request, response: express.Response) => {
         Employee.findOne(
             {where:
-            {id:parseInt(request.params.id)}}).then((data) =>{
+            {id:parseInt(request.params.id)},
+            select:["firstName","lastName","age","experience","address","mobileNo","position"]}).then((data) =>{
             response.json(data)
         });
     }
@@ -22,7 +21,9 @@ class EmployeeController {
         // const {error} = this.validateEmployee(request.body);
         // if(error) return response.status(400).send(error.details[0].message);
         let employeeObject:any = {};
-        let missingFeilds = []
+        let missingFeilds = [];
+        let incorrectFeilds= [];
+        let message = "";
         if(request.body.firstName!= null)
             employeeObject.firstName = request.body.firstName;
         else
@@ -31,12 +32,18 @@ class EmployeeController {
             employeeObject.lastName = request.body.lastName;
         else
             missingFeilds.push("lastName");
-        if(request.body.age!= null)
+        if(request.body.age!= null){
+            if(!this.isNumber(request.body.age))
+                incorrectFeilds.push("age should be number");
             employeeObject.age =request.body.age;
+        }
         else
             missingFeilds.push("age");
-        if(request.body.experience!= null)
+        if(request.body.experience!= null){
+            if(!this.isNumber(request.body.experience))
+                incorrectFeilds.push("experience should be number");
             employeeObject.experience =request.body.experience;
+        }
         else
             missingFeilds.push("experience");
         if(request.body.address!= null)
@@ -47,8 +54,11 @@ class EmployeeController {
             employeeObject.mobileNo = request.body.mobileNo;
         else
             missingFeilds.push("mobileNo");
-        if(request.body.position!= null)
+        if(request.body.position!= null){
+            if(!Object.values(Position).includes(request.body.position))
+                incorrectFeilds.push("Incorrect position is provided");
             employeeObject.position =request.body.position;
+        }
         else
             missingFeilds.push("position");
         
@@ -83,10 +93,12 @@ class EmployeeController {
                 missingFeilds.push("teamLead");
         }
             
-        
-        
         if(missingFeilds.length != 0)
-             return response.send("Following feilds are missing ->" + missingFeilds.toString());
+            message += "Following feilds are missing ->" + missingFeilds.toString();
+        if(incorrectFeilds.length != 0)
+            message +="Following feilds are incorrect ->" + incorrectFeilds.toString();
+        if(message)
+            return response.send(message)
         Employee.save(employeeObject);
         Employee.find().then((data) =>{
             response.json(data)
@@ -177,7 +189,15 @@ class EmployeeController {
         }else{
             response.send("Employee not found");
         }
-        }
+    }
+
+    public static isNumber(num:any){
+            let n = parseInt(num);
+            if(Number.isInteger(n))
+                return true;
+            else
+                return false;
+    }
 
     // private static validateEmployee(employee:object):any{
     //     const schema = {
