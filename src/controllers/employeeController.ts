@@ -3,7 +3,7 @@ import { Employee } from '../entities/employee';
 import { Position } from '../entities/employeeInterface';
 class EmployeeController {
     public static getAllEmployee = (request: express.Request, response: express.Response) => {
-        Employee.find({select:["firstName","lastName","age","experience","address","mobileNo","position"]}).then((data) =>{
+        Employee.find({select:["id","firstName","lastName","age","experience","address","mobileNo","position"]}).then((data) =>{
             response.json(data)
         });
     }
@@ -12,97 +12,93 @@ class EmployeeController {
         Employee.findOne(
             {where:
             {id:parseInt(request.params.id)},
-            select:["firstName","lastName","age","experience","address","mobileNo","position"]}).then((data) =>{
+            select:["id","firstName","lastName","age","experience","address","mobileNo","position"]}).then((data) =>{
             response.json(data)
         });
     }
 
     public static addEmployee = (request: express.Request, response: express.Response) => {
-        // const {error} = this.validateEmployee(request.body);
-        // if(error) return response.status(400).send(error.details[0].message);
         let employeeObject:any = {};
-        let missingFeilds = [];
-        let incorrectFeilds= [];
+        let missingFields = [];
+        let incorrectFields= [];
         let message = "";
-        if(request.body.firstName!= null)
+        if(request.body.firstName!= null && request.body.firstName!= "")
             employeeObject.firstName = request.body.firstName;
         else
-            missingFeilds.push("firstName");
-        if(request.body.lastName!= null)
+            missingFields.push("firstName");
+        if(request.body.lastName!= null && request.body.lastName!= "")
             employeeObject.lastName = request.body.lastName;
         else
-            missingFeilds.push("lastName");
-        if(request.body.age!= null){
+            missingFields.push("lastName");
+        if(request.body.age!= null && request.body.age!= ""){
             if(!this.isNumber(request.body.age))
-                incorrectFeilds.push("age should be number");
+                incorrectFields.push("age should be number");
             employeeObject.age =request.body.age;
         }
         else
-            missingFeilds.push("age");
-        if(request.body.experience!= null){
+            missingFields.push("age");
+        if(request.body.experience!= null && request.body.experience!= ""){
             if(!this.isNumber(request.body.experience))
-                incorrectFeilds.push("experience should be number");
+                incorrectFields.push("experience should be number");
             employeeObject.experience =request.body.experience;
         }
         else
-            missingFeilds.push("experience");
-        if(request.body.address!= null)
+            missingFields.push("experience");
+        if(request.body.address!= null && request.body.address!= "")
             employeeObject.address =request.body.address;
         else
-            missingFeilds.push("address");
-        if(request.body.mobileNo!= null)
+            missingFields.push("address");
+        if(request.body.mobileNo!= null && request.body.mobileNo!= "")
             employeeObject.mobileNo = request.body.mobileNo;
         else
-            missingFeilds.push("mobileNo");
-        if(request.body.position!= null){
+            missingFields.push("mobileNo");
+        if(request.body.position!= null && request.body.position!= ""){
             if(!Object.values(Position).includes(request.body.position))
-                incorrectFeilds.push("Incorrect position is provided");
+                incorrectFields.push("Incorrect position is provided");
             employeeObject.position =request.body.position;
         }
         else
-            missingFeilds.push("position");
+            missingFields.push("position");
         
-        if(request.body.CEO!= null)
+        if(request.body.CEO!= null && request.body.CEO!= "")
             employeeObject.CEO =request.body.CEO;
         else{   
             if(request.body.position != "CEO")
-                missingFeilds.push("CEO");
+                missingFields.push("CEO");
         }
-        if(request.body.managingDirector!= null)
+        if(request.body.managingDirector!= null && request.body.managingDirector!= "")
             employeeObject.managingDirector =request.body.managingDirector;
         else{
              if (["CEO","MD"].indexOf(request.body.position)<0 )
-                missingFeilds.push("managingDirector");
+                missingFields.push("managingDirector");
         }
-        if(request.body.duHead!= null)
+        if(request.body.duHead!= null && request.body.duHead!= "")
             employeeObject.duHead =request.body.duHead;
         else{
              if(["CEO","MD","DUHead"].indexOf(request.body.position)<0 )
-                missingFeilds.push("duHead");
+                missingFields.push("duHead");
         }
-        if(request.body.manager!= null)
+        if(request.body.manager!= null && request.body.manager!= "")
             employeeObject.manager =request.body.manager;
         else{
              if(["CEO","MD","DUHead","Manager"].indexOf(request.body.position)<0 )
-                missingFeilds.push("manager");
+                missingFields.push("manager");
         }
-        if(request.body.teamLead!= null)
+        if(request.body.teamLead!= null && request.body.teamLead!= "")
             employeeObject.teamLead =request.body.teamLead;
         else{
              if(["CEO","MD","DUHead","Manager","TL"].indexOf(request.body.position)<0 )
-                missingFeilds.push("teamLead");
+                missingFields.push("teamLead");
         }
             
-        if(missingFeilds.length != 0)
-            message += "Following feilds are missing ->" + missingFeilds.toString();
-        if(incorrectFeilds.length != 0)
-            message +="Following feilds are incorrect ->" + incorrectFeilds.toString();
+        if(missingFields.length != 0)
+            message += "Missing Fields:" + missingFields.toString();
+        if(incorrectFields.length != 0)
+            message +="Incorrect Fields:" + incorrectFields.toString();
         if(message)
-            return response.send(message)
+            return response.send({"message":message})
         Employee.save(employeeObject);
-        Employee.find().then((data) =>{
-            response.json(data)
-        });
+        response.send({"message":"Added entry in database"});
     }
 
     public static updateEmployee = (request: express.Request, response: express.Response) => {
@@ -126,20 +122,17 @@ class EmployeeController {
             updatedObject.position = request.body.position;
         if(request.body.reportingTo!= null)
             updatedObject.reportingTo = request.body.reportingTo;
-        if(updatedObject==null) return response.send("No data has been sent for updation");
+        if(updatedObject==null) return response.send({"message":"No data has been sent for updation"});
         Employee.update({id:request.body.id},updatedObject);
-        Employee.findOne(
-            {where:
-            {id:parseInt(request.body.id)}}).then((data) =>{
-            response.json(data)
-        });
+        
+        response.send({"message":"Employee entry updated in the database"});
     }
     
     
     public static deleteEmployee = (request: express.Request, response: express.Response) => {
         if(request.body.id==null) return response.send("Id is missing");
         Employee.delete({id:request.body.id})
-        response.send("Employee entry deleted");
+        response.send({"message":"Employee entry deleted"});
     }
 
     public static getEmployeeHigherHierarchy = async (request: express.Request, response: express.Response) => {

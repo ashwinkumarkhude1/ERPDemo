@@ -18,33 +18,31 @@ class TeamController {
 
     public static addTeam = (request: express.Request, response: express.Response) => {
         let teamObject:any = {};
-        let missingFeilds = []
+        let missingFields = []
         if(request.body.name!= null)
             teamObject.name = request.body.name;
         else
-            missingFeilds.push("name");
+            missingFields.push("name");
         if(request.body.duHead!= null)
             teamObject.duHead = request.body.duHead;
         else
-            missingFeilds.push("duHead");
+            missingFields.push("duHead");
         if(request.body.manager!= null)
             teamObject.manager =request.body.manager;
         else
-            missingFeilds.push("manager");
+            missingFields.push("manager");
         if(request.body.teamLead!= null)
             teamObject.teamLead =request.body.teamLead;
         else
-            missingFeilds.push("teamLead");
+            missingFields.push("teamLead");
         if(request.body.teamMember!= null)
             teamObject.teamMember =request.body.teamMember;
         else
-            missingFeilds.push("teamMember");
-        if(missingFeilds.length != 0)
-             return response.send("Following feilds are missing ->" + missingFeilds.toString());
+            missingFields.push("teamMember");
+        if(missingFields.length != 0)
+             return response.send("Following fields are missing ->" + missingFields.toString());
         Team.save(teamObject);
-        Team.find().then((data) =>{
-            response.json(data)
-        });
+        response.send({"message":"Added entry in database"});
     }
 
     public static updateTeam = (request: express.Request, response: express.Response) => {
@@ -62,17 +60,13 @@ class TeamController {
             updatedObject.teamMember =request.body.teamMember;
         if(updatedObject==null) return response.send("No data has been sent for updation");
         Team.update({id:request.body.id},updatedObject);
-        Team.findOne(
-            {where:
-            {id:parseInt(request.body.id)}}).then((data) =>{
-            response.json(data)
-        });
+        response.send({"message":"Team entry updated in the database"});
     }
 
     public static deleteTeam = (request: express.Request, response: express.Response) => {
         if(request.body.id==null) return response.send("Id is missing");
         Team.delete({id:request.body.id})
-        response.send("team entry deleted");
+        response.send({"message":"team entry deleted"});
     }
 }
 export default TeamController;

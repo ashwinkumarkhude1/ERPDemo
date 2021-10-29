@@ -18,26 +18,24 @@ class ProjectController {
 
     public static addProject = (request: express.Request, response: express.Response) => {
         let projectObject:any = {};
-        let missingFeilds = []
+        let missingFields = []
         if(request.body.name!= null)
             projectObject.name = request.body.name;
         else
-            missingFeilds.push("name");
+            missingFields.push("name");
         if(request.body.client!= null)
             projectObject.client = request.body.client;
         else
-            missingFeilds.push("client");
+            missingFields.push("client");
         if(request.body.team!= null)
             projectObject.team =request.body.team;
         else
-            missingFeilds.push("team");
+            missingFields.push("team");
 
-        if(missingFeilds.length != 0)
-             return response.send("Following feilds are missing ->" + missingFeilds.toString());
+        if(missingFields.length != 0)
+             return response.send("Following fields are missing ->" + missingFields.toString());
         Project.save(projectObject);
-        Project.find().then((data) =>{
-            response.json(data)
-        });
+        response.send({"message":"Added entry in database"});
     }
 
     public static updateProject = (request: express.Request, response: express.Response) => {
@@ -52,17 +50,13 @@ class ProjectController {
        
         if(updatedObject==null) return response.send("No data has been sent for updation");
         Project.update({id:request.body.id},updatedObject);
-        Project.findOne(
-            {where:
-            {id:parseInt(request.body.id)}}).then((data) =>{
-            response.json(data)
-        });
+        response.send({"message":"Updated entry in database"});
     }
 
     public static deleteProject = (request: express.Request, response: express.Response) => {
         if(request.body.id==null) return response.send("Id is missing");
         Project.delete({id:request.body.id})
-        response.send("Project entry deleted");
+        response.send({"message":"Deleted project from database"});
     }
 }
 export default ProjectController;
