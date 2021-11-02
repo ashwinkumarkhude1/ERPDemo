@@ -14,6 +14,7 @@ router.post('/employee/addEmployee', EmployeeController.addEmployee);
 router.put('/employee/updateEmployee', EmployeeController.updateEmployee);
 router.delete('/employee/deleteEmployee', EmployeeController.deleteEmployee);
 router.get('/employee/getEmployeeHigherHierarchy/:id',EmployeeController.getEmployeeHigherHierarchy);
+router.get('/employee/getEmployeesOfPosition',EmployeeController.getHigherUpDetails);
 
 router.get('/team/get', TeamController.getAllTeams);
 router.get('/team/get/:id', TeamController.getTeam);

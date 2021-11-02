@@ -1,4 +1,5 @@
 import e, * as express from 'express';
+import { stringify } from 'querystring';
 import { Employee } from '../entities/employee';
 import { Position } from '../entities/employeeInterface';
 class EmployeeController {
@@ -140,41 +141,41 @@ class EmployeeController {
                 {where:
                     {id:parseInt(request.params.id)}
                 });
-                res.Employee = {"firstName":employee?.firstName,"lastName":employee?.lastName};
+                res.Employee = {"id":employee?.id,"firstName":employee?.firstName,"lastName":employee?.lastName};
         if(employee!= null){
             if(employee?.teamLead != null){
                 res.TeamLead = await Employee.findOne(
                     {where:
                         {id:employee.teamLead},
-                        select:["firstName","lastName"]
+                        select:["id","firstName","lastName"]
                     });
             }
             if(employee?.manager != null){
                 res.Manager = await Employee.findOne(
                     {where:
                         {id:employee.manager},
-                        select:["firstName","lastName"]
+                        select:["id","firstName","lastName"]
                     });
             }
             if(employee?.duHead != null){
                 res.DUHead = await Employee.findOne(
                     {where:
                         {id:employee.duHead},
-                        select:["firstName","lastName"]
+                        select:["id","firstName","lastName"]
                     });
             }
             if(employee?.managingDirector != null){
                 res.ManagingDirector = await Employee.findOne(
                     {where:
                         {id:employee.managingDirector},
-                        select:["firstName","lastName"]
+                        select:["id","firstName","lastName"]
                     });
             }
             if(employee?.CEO != null){
                 res.CEO = await Employee.findOne(
                     {where:
                         {id:employee.CEO},
-                        select:["firstName","lastName"]
+                        select:["id","firstName","lastName"]
                     });
             }
             response.send(res);
@@ -212,13 +213,21 @@ class EmployeeController {
         
     }
 
-    public static getHigherUpDetails = (request: express.Request, response: express.Response) => {
-        Employee.find(
+    public static getHigherUpDetails = async(request: express.Request, response: express.Response) => {
+        let res:any ={} 
+        res.duHead = await Employee.find(
             {where:
-            {id:parseInt(request.params.id)},
-            select:["id","firstName","lastName","age","experience","address","mobileNo","position"]}).then((data) =>{
-            response.json(data)
-        });
+            {position:"DUHead"},
+            select:["id","firstName","lastName"]});
+        res.manager = await Employee.find(
+            {where:
+            {position:"Manager"},
+            select:["id","firstName","lastName"]});
+        res.teamLead = await Employee.find(
+            {where:
+            {position:"TL"},
+            select:["id","firstName","lastName"]});
+        response.send(res);
     }
 }
 
