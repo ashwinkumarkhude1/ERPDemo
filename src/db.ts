@@ -3,7 +3,7 @@ import {createConnection} from "typeorm";
 import { Employee } from "./entities/employee";
 import { Project } from "./entities/project";
 import { Team } from "./entities/team";
-export async function intializeDB(): Promise<void> {
+export async function intializeDB(host:string,username:string,password:string,database:string, ): Promise<void> {
   await createConnection({
     type: "postgres",
     host: "localhost",
