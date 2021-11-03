@@ -4,7 +4,7 @@ import { Employee } from '../entities/employee';
 import { Position } from '../entities/employeeInterface';
 class EmployeeController {
     public static getAllEmployee = (request: express.Request, response: express.Response) => {
-        Employee.find({select:["id","firstName","lastName","age","experience","address","mobileNo","position"]}).then((data) =>{
+        Employee.find({select:["id","firstName","lastName","age","experience","address","mobileNo","position","team"]}).then((data) =>{
             response.json(data)
         });
     }
@@ -92,6 +92,8 @@ class EmployeeController {
              if(["CEO","MD","DUHead","Manager","TL"].indexOf(request.body.position)<0 )
                 missingFields.push("teamLead");
         }
+        if(request.body.team!= null && request.body.team!= "")
+            employeeObject.team = request.body.team;
             
         if(missingFields.length != 0)
             message += "Missing Fields:" + missingFields.toString();
@@ -122,6 +124,8 @@ class EmployeeController {
             updatedObject.position =request.body.position;
         if(request.body.position!= null && request.body.position!= "")
             updatedObject.position = request.body.position;
+        if(request.body.team!= null && request.body.team!= "")
+            updatedObject.team = request.body.team;
         if(updatedObject==null) return response.send({"message":"No data has been sent for updation"});
         Employee.update({id:request.body.id},updatedObject);
         

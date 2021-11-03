@@ -24,5 +24,6 @@ export interface employeeInterface{
     duHead?:number;
     managingDirector?:number;
     CEO?:number;
+    team?:string;
 }
 

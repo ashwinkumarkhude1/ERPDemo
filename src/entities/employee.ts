@@ -29,4 +29,6 @@ export class Employee extends BaseEntity implements employeeInterface{
   managingDirector?:number;
   @Column({nullable:true})
   CEO?:number;
+  @Column({nullable:true})
+  team!: string;
 }
