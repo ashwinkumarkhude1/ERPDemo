@@ -1,0 +1,10 @@
+FROM node:14.4.0 AS build
+RUN mkdir -p /ERPDemo/config /ERPDemo/src
+WORKDIR /ERPDemo
+
+COPY package.json /ERPDemo/package.json
+COPY package-lock.json /ERPDemo/package-lock.json
+
+RUN npm install
+
+CMD ["npm", "run", "dev"]
