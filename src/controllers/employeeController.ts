@@ -1,3 +1,4 @@
+import { getCipherInfo } from 'crypto';
 import e, * as express from 'express';
 import { stringify } from 'querystring';
 import { Employee } from '../entities/employee';
@@ -70,28 +71,58 @@ class EmployeeController {
         
         if(request.body.position!= "CEO"){
             employeeObject.CEO = ceo?.id;
-            if(request.body.position!= "MD")   
+            if(request.body.position!= "MD"){   
                 employeeObject.managingDirector = md?.id;
+                if(request.body.position!= "DUHead"){
+                    if(request.body.position== "Manager"){
+                        if(request.body.duHead!= null && request.body.duHead!= "")
+                            employeeObject.duHead =request.body.duHead;
+                        else
+                            missingFields.push("duHead");
+                    }
+                    else if(request.body.position== "TL"){
+                        if(request.body.manager!= null && request.body.manager!= ""){
+                            employeeObject.manager =request.body.manager;
+                            let higherUp:any = await this.getHigherUpInfo(request.body.manager);
+                            employeeObject.duHead = higherUp?.duHead;
+                        }     
+                        else
+                            missingFields.push("manager");
+                    }
+                    else if(request.body.position== "SDE"){
+                        if(request.body.teamLead!= null && request.body.teamLead!= ""){
+                            employeeObject.teamLead =request.body.teamLead;
+                            let higherUp:any = await this.getHigherUpInfo(request.body.teamLead);
+                            employeeObject.manager = higherUp?.manager;
+                            employeeObject.duHead = higherUp?.duHead;
+                        }     
+                        else
+                            missingFields.push("teamLead");
+                    }
+                }              
+            }
         }
+
+
             
-        if(request.body.duHead!= null && request.body.duHead!= "")
-            employeeObject.duHead =request.body.duHead;
-        else{
-             if(["CEO","MD","DUHead"].indexOf(request.body.position)<0 )
-                missingFields.push("duHead");
-        }
-        if(request.body.manager!= null && request.body.manager!= "")
-            employeeObject.manager =request.body.manager;
-        else{
-             if(["CEO","MD","DUHead","Manager"].indexOf(request.body.position)<0 )
-                missingFields.push("manager");
-        }
-        if(request.body.teamLead!= null && request.body.teamLead!= "")
-            employeeObject.teamLead =request.body.teamLead;
-        else{
-             if(["CEO","MD","DUHead","Manager","TL"].indexOf(request.body.position)<0 )
-                missingFields.push("teamLead");
-        }
+        // if(request.body.duHead!= null && request.body.duHead!= "")
+        //     employeeObject.duHead =request.body.duHead;
+        // else{
+        //      if(["CEO","MD","DUHead"].indexOf(request.body.position)<0 )
+        //         missingFields.push("duHead");
+        // }
+        // if(request.body.manager!= null && request.body.manager!= "")
+        //     employeeObject.manager =request.body.manager;
+        // else{
+        //      if(["CEO","MD","DUHead","Manager"].indexOf(request.body.position)<0 )
+        //         missingFields.push("manager");
+        // }
+        // if(request.body.teamLead!= null && request.body.teamLead!= "")
+        //     employeeObject.teamLead =request.body.teamLead;
+        // else{
+        //      if(["CEO","MD","DUHead","Manager","TL"].indexOf(request.body.position)<0 )
+        //         missingFields.push("teamLead");
+        // }
         if(request.body.team!= null && request.body.team!= "")
             employeeObject.team = request.body.team;
             
@@ -232,6 +263,14 @@ class EmployeeController {
             {position:"TL"},
             select:["id","firstName","lastName"]});
         response.send(res);
+    }
+
+    public static getHigherUpInfo = async(id:any) => {
+        let higherUpInfo = await Employee.findOne(
+        {where:
+        {id:parseInt(id)},
+        select:["duHead","manager"]});
+        return higherUpInfo;
     }
 }
 
