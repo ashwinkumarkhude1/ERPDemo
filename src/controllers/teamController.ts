@@ -19,30 +19,30 @@ class TeamController {
     public static addTeam = (request: express.Request, response: express.Response) => {
         let teamObject:any = {};
         let missingFields = []
-        if(request.body.name!= null)
+        if(request.body.name!= null && request.body.name!= "")
             teamObject.name = request.body.name;
         else
             missingFields.push("name");
-        if(request.body.duHead!= null)
+        if(request.body.duHead!= null && request.body.duHead!= "")
             teamObject.duHead = request.body.duHead;
         else
             missingFields.push("duHead");
-        if(request.body.manager!= null)
+        if(request.body.manager!= null && request.body.manager!= "")
             teamObject.manager =request.body.manager;
         else
             missingFields.push("manager");
-        if(request.body.teamLead!= null)
+        if(request.body.teamLead!= null && request.body.teamLead!= "")
             teamObject.teamLead =request.body.teamLead;
         else
             missingFields.push("teamLead");
-        if(request.body.teamMember!= null)
+        if(request.body.teamMember!= null && request.body.teamMember!= ""  && request.body.teamMember.length!= 0)
             teamObject.teamMember =request.body.teamMember;
         else
             missingFields.push("teamMember");
         if(missingFields.length != 0)
-             return response.send("Following fields are missing ->" + missingFields.toString());
+             return response.send({"status":"Error!","MissingFields" : missingFields.toString()});
         Team.save(teamObject);
-        response.send({"message":"Added entry in database"});
+        response.send({"status":"Success!","message":"Added entry in database"});
     }
 
     public static updateTeam = (request: express.Request, response: express.Response) => {

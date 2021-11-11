@@ -23,9 +23,10 @@ class EmployeeController {
         let employeeObject:any = {};
         let missingFields = [];
         let incorrectFields= [];
-        let message = "";
+        let messageResponse:any = {};
         let ceo = await this.getHigherUp("CEO");
         let md = await this.getHigherUp("MD");
+        let reg = new RegExp(/^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/im);
         if(request.body.firstName!= null && request.body.firstName!= "")
             employeeObject.firstName = request.body.firstName;
         else
@@ -53,7 +54,8 @@ class EmployeeController {
         else
             missingFields.push("address");
         if(request.body.mobileNo!= null && request.body.mobileNo!= ""){
-            if(this.isValidMobileNo(request.body.mobileNo))
+            employeeObject.mobileNo = request.body.mobileNo;
+            if(request.body.mobileNo.match(reg))
                 employeeObject.mobileNo = request.body.mobileNo;
             else
                 incorrectFields.push("mobileNo")
@@ -102,38 +104,20 @@ class EmployeeController {
                 }              
             }
         }
-
-
-            
-        // if(request.body.duHead!= null && request.body.duHead!= "")
-        //     employeeObject.duHead =request.body.duHead;
-        // else{
-        //      if(["CEO","MD","DUHead"].indexOf(request.body.position)<0 )
-        //         missingFields.push("duHead");
-        // }
-        // if(request.body.manager!= null && request.body.manager!= "")
-        //     employeeObject.manager =request.body.manager;
-        // else{
-        //      if(["CEO","MD","DUHead","Manager"].indexOf(request.body.position)<0 )
-        //         missingFields.push("manager");
-        // }
-        // if(request.body.teamLead!= null && request.body.teamLead!= "")
-        //     employeeObject.teamLead =request.body.teamLead;
-        // else{
-        //      if(["CEO","MD","DUHead","Manager","TL"].indexOf(request.body.position)<0 )
-        //         missingFields.push("teamLead");
-        // }
         if(request.body.team!= null && request.body.team!= "")
             employeeObject.team = request.body.team;
             
         if(missingFields.length != 0)
-            message += "Missing Fields:" + missingFields.toString();
+            messageResponse.MissingFields =  missingFields.toString();
         if(incorrectFields.length != 0)
-            message +=" Incorrect Fields:" + incorrectFields.toString();
-        if(message)
-            return response.send({"message":message})
+            messageResponse.IncorrectFields =   incorrectFields.toString();
+        if(Object.keys(messageResponse).length){
+            messageResponse.status = "Error!";
+            return response.send(messageResponse)
+        }
+            
         Employee.save(employeeObject);
-        response.send({"message":"Added entry in database"});
+        response.send({"status":"Success!","message":"Added employee with name: "+employeeObject.firstName+" "+employeeObject.lastName +" in database"});
     }
 
     public static updateEmployee = (request: express.Request, response: express.Response) => {
@@ -171,12 +155,23 @@ class EmployeeController {
     }
 
     public static getEmployeeHigherHierarchy = async (request: express.Request, response: express.Response) => {
-        let res:any ={} 
-        let employee = await Employee.findOne(
+        let res:any ={} ;
+        let employee:any;
+        if(this.isNumber(request.params.id)){
+        
+         employee = await Employee.findOne(
+            {where:
+                {id:parseInt(request.params.id)}
+            });
+            res.Employee = {"id":employee?.id,"firstName":employee?.firstName,"lastName":employee?.lastName};
+        }else{
+            employee = await Employee.findOne(
                 {where:
-                    {id:parseInt(request.params.id)}
+                    [{firstName:request.params.id},{lastName:request.params.id}]
                 });
                 res.Employee = {"id":employee?.id,"firstName":employee?.firstName,"lastName":employee?.lastName};
+
+        }
         if(employee!= null){
             if(employee?.teamLead != null){
                 res.TeamLead = await Employee.findOne(
@@ -261,6 +256,10 @@ class EmployeeController {
         res.teamLead = await Employee.find(
             {where:
             {position:"TL"},
+            select:["id","firstName","lastName"]});
+        res.teamMember = await Employee.find(
+            {where:
+            {position:"SDE"},
             select:["id","firstName","lastName"]});
         response.send(res);
     }
